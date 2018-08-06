@@ -1,18 +1,40 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+import 'medium-draft/lib/index.css';
 import './App.css';
+import { Editor, createEditorState } from 'medium-draft';
 
 class App extends Component {
+  state = {
+    editorState: createEditorState()
+  };
+
+  onChange = editorState => {
+    this.setState({ editorState });
+  };
+
+  onClick = () => {
+    this.refs.editor.focus();
+  };
+
+  componentDidMount() {
+    this.refs.editor.focus();
+  }
+
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
+      <div onClick={this.onClick} className="App">
+        <div className="Content">
+          <Editor
+            ref="editor"
+            editorState={this.state.editorState}
+            onChange={this.onChange}
+            sideButtons={[]}
+            toolbarConfig={{
+              block: [],
+              inline: ['BOLD', 'ITALIC', 'UNDERLINE']
+            }}
+          />
+        </div>
       </div>
     );
   }
