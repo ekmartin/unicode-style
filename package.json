@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "draftjs-utils": "^0.9.4",
     "medium-draft": "^0.6.0-beta1",
     "react": "^16.4.2",
     "react-dom": "^16.4.2"
@@ -23,7 +24,10 @@
     "singleQuote": true
   },
   "eslintConfig": {
-    "extends": ["react-app", "prettier"],
+    "extends": [
+      "react-app",
+      "prettier"
+    ],
     "parserOptions": {
       "ecmaVersion": 8
     }
