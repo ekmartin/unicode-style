@@ -14,13 +14,21 @@ const TRANSFORMS = {
   BOLD: {
     surrogate: 0xd835,
     modifier: [0xdd8d, 0xdd93]
+  },
+  UNDERLINE: {
+    surrogate: 0xd835,
+    modifier: [0xdd8d, 0xdd93]
+  },
+  ITALIC: {
+    surrogate: 0xd835,
+    modifier: [0xddc1, 0xddc7]
   }
 };
 
 const STYLE_MAP = {
   BOLD: {},
   UNDERLINE: {},
-  ITALICS: {}
+  ITALIC: {}
 };
 
 function isLower(code) {
