@@ -10,12 +10,13 @@ const MIN_LOWER = 'a'.charCodeAt(0);
 const MAX_LOWER = 'z'.charCodeAt(0);
 const MIN_UPPER = 'A'.charCodeAt(0);
 const MAX_UPPER = 'Z'.charCodeAt(0);
+
+const APPENDERS = {
+  UNDERLINE: '̲'
+};
+
 const TRANSFORMS = {
   BOLD: {
-    surrogate: 0xd835,
-    modifier: [0xdd8d, 0xdd93]
-  },
-  UNDERLINE: {
     surrogate: 0xd835,
     modifier: [0xdd8d, 0xdd93]
   },
@@ -39,7 +40,7 @@ function isCapital(code) {
   return code >= MIN_UPPER && code <= MAX_UPPER;
 }
 
-function applyStyle(transform, text) {
+function applyTransform(transform, text) {
   const { modifier, surrogate } = transform;
   return runes(text)
     .map(char => {
@@ -54,7 +55,11 @@ function applyStyle(transform, text) {
     .join('');
 }
 
-function removeStyle(transform, text) {
+function applyAppender(appendChar, text) {
+  return runes(text).reduce((str, char) => str + char + appendChar, '');
+}
+
+function removeTransform(transform, text) {
   const { modifier, surrogate } = transform;
   return runes(text)
     .map(char => {
@@ -64,15 +69,38 @@ function removeStyle(transform, text) {
 
       const code = char.charCodeAt(1);
       const [lower, upper] = modifier;
-      if (MIN_LOWER + lower < code && MAX_LOWER + lower > code) {
+      if (MIN_LOWER + lower <= code && MAX_LOWER + lower >= code) {
         return String.fromCharCode(code - lower);
-      } else if (MIN_UPPER + upper < code && MAX_UPPER + upper > code) {
+      } else if (MIN_UPPER + upper <= code && MAX_UPPER + upper >= code) {
         return String.fromCharCode(code - upper);
       }
 
       return char;
     })
     .join('');
+}
+
+function removeAppender(appendChar, text) {
+  return text
+    .split('')
+    .filter(c => c !== appendChar)
+    .join('');
+}
+
+function applyStyle(style, text) {
+  if (TRANSFORMS[style]) {
+    return applyTransform(TRANSFORMS[style], text);
+  }
+
+  return applyAppender(APPENDERS[style], text);
+}
+
+function removeStyle(style, text) {
+  if (TRANSFORMS[style]) {
+    return removeTransform(TRANSFORMS[style], text);
+  }
+
+  return removeAppender(APPENDERS[style], text);
 }
 
 class App extends Component {
@@ -86,7 +114,7 @@ class App extends Component {
     const selection = editorState.getSelection();
     const content = editorState.getCurrentContent();
     const styledText = style.reduce(
-      (text, style) => applyStyle(TRANSFORMS[style], text),
+      (text, style) => applyStyle(style, text),
       str
     );
 
@@ -118,12 +146,12 @@ class App extends Component {
     const content = editorState.getCurrentContent();
     const currentText = getSelectionText(editorState);
     const rawText = currentStyle.reduce(
-      (text, style) => removeStyle(TRANSFORMS[style], text),
+      (text, style) => removeStyle(style, text),
       currentText
     );
 
     const styledText = newStyle.reduce(
-      (text, style) => applyStyle(TRANSFORMS[style], text),
+      (text, style) => applyStyle(style, text),
       rawText
     );
 
