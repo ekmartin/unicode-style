@@ -1,6 +1,5 @@
 /**
  * TODO:
- *  * Keyboard shortcuts
  *  * Support for combined styles (bold + italics etc.)
  *  * Design
  *  * Mobile support
@@ -14,7 +13,7 @@ import runes from 'runes';
 import { getSelectionText } from 'draftjs-utils';
 import Editor from 'draft-js-plugins-editor';
 import createInlineToolbarPlugin from 'draft-js-inline-toolbar-plugin';
-import { Modifier, EditorState } from 'draft-js';
+import { Modifier, EditorState, RichUtils } from 'draft-js';
 
 const MIN_LOWER = 'a'.charCodeAt(0);
 const MAX_LOWER = 'z'.charCodeAt(0);
@@ -121,6 +120,16 @@ class App extends Component {
     editorState: EditorState.createEmpty()
   };
 
+  handleKeyCommand = (command, editorState) => {
+    const newState = RichUtils.handleKeyCommand(editorState, command);
+    if (newState) {
+      this.onChange(newState);
+      return 'handled';
+    }
+
+    return 'not-handled';
+  };
+
   handleBeforeInput = (str, editorState) => {
     const style = editorState.getCurrentInlineStyle();
     const selection = editorState.getSelection();
@@ -199,7 +208,8 @@ class App extends Component {
           <Editor
             ref="editor"
             editorState={this.state.editorState}
-            beforeInput={this.handleBeforeInput}
+            handleKeyCommand={this.handleKeyCommand}
+            handleBeforeInput={this.handleBeforeInput}
             onChange={this.onChange}
             plugins={[inlineToolbarPlugin]}
             customStyleMap={STYLE_MAP}
