@@ -1,10 +1,15 @@
 import React, { Component } from 'react';
+import runes from 'runes';
 import 'medium-draft/lib/index.css';
 import './App.css';
 import { Modifier, EditorState } from 'draft-js';
 import { getSelectionText } from 'draftjs-utils';
 import { HANDLED, Editor, createEditorState } from 'medium-draft';
 
+const MIN_LOWER = 'a'.charCodeAt(0);
+const MAX_LOWER = 'z'.charCodeAt(0);
+const MIN_UPPER = 'A'.charCodeAt(0);
+const MAX_UPPER = 'Z'.charCodeAt(0);
 const TRANSFORMS = {
   BOLD: {
     surrogate: 0xd835,
@@ -12,18 +17,23 @@ const TRANSFORMS = {
   }
 };
 
-function isCapital(code) {
-  return code >= 65 && code <= 90;
-}
+const STYLE_MAP = {
+  BOLD: {},
+  UNDERLINE: {},
+  ITALICS: {}
+};
 
 function isLower(code) {
-  return code >= 97 && code <= 122;
+  return code >= MIN_LOWER && code <= MAX_LOWER;
+}
+
+function isCapital(code) {
+  return code >= MIN_UPPER && code <= MAX_UPPER;
 }
 
 function applyStyle(transform, text) {
   const { modifier, surrogate } = transform;
-  return text
-    .split('')
+  return runes(text)
     .map(char => {
       const code = char.charCodeAt(0);
       if (isCapital(code) || isLower(code)) {
@@ -37,14 +47,19 @@ function applyStyle(transform, text) {
 }
 
 function removeStyle(transform, text) {
-  const { modifier } = transform;
-  return text
-    .split('')
+  const { modifier, surrogate } = transform;
+  return runes(text)
     .map(char => {
-      const code = char.charCodeAt(0);
-      if (isCapital(code) || isLower(code)) {
-        const mod = isCapital(code) ? modifier[1] : modifier[0];
-        return String.fromCharCode(mod - code);
+      if (char.charCodeAt(0) !== surrogate) {
+        return char;
+      }
+
+      const code = char.charCodeAt(1);
+      const [lower, upper] = modifier;
+      if (MIN_LOWER + lower < code && MAX_LOWER + lower > code) {
+        return String.fromCharCode(code - lower);
+      } else if (MIN_UPPER + upper < code && MAX_UPPER + upper > code) {
+        return String.fromCharCode(code - upper);
       }
 
       return char;
@@ -53,62 +68,70 @@ function removeStyle(transform, text) {
 }
 
 class App extends Component {
+  rawState = createEditorState();
   state = {
     editorState: createEditorState()
   };
 
   handleBeforeInput = (editorState, str, onChange) => {
-    const selectionState = editorState.getSelection();
-    const contentState = editorState.getCurrentContent();
     const style = editorState.getCurrentInlineStyle();
+    const selection = editorState.getSelection();
+    const content = editorState.getCurrentContent();
     const styledText = style.reduce(
       (text, style) => applyStyle(TRANSFORMS[style], text),
       str
     );
 
-    onChange(
-      EditorState.push(
-        editorState,
-        Modifier.insertText(contentState, selectionState, styledText, style),
-        'insert-characters'
-      )
+    const newState = EditorState.push(
+      editorState,
+      Modifier.insertText(content, selection, styledText, style),
+      'insert-characters'
     );
 
+    onChange(newState);
     return HANDLED;
   };
 
   onChange = editorState => {
     const currentContent = this.state.editorState.getCurrentContent();
+    const currentStyle = this.state.editorState.getCurrentInlineStyle();
+    const newStyle = editorState.getCurrentInlineStyle();
     const newContent = editorState.getCurrentContent();
     const lastChange = editorState.getLastChangeType();
-    if (currentContent === newContent || lastChange !== 'change-inline-style') {
+    if (
+      currentContent === newContent ||
+      lastChange !== 'change-inline-style' ||
+      currentStyle === newStyle
+    ) {
       return this.setState({ editorState });
     }
 
-    const style = editorState.getCurrentInlineStyle();
-    const selectionState = editorState.getSelection();
-    const contentState = editorState.getCurrentContent();
+    const selection = editorState.getSelection();
+    const content = editorState.getCurrentContent();
     const currentText = getSelectionText(editorState);
-    const previousStyle = this.state.editorState.getCurrentInlineStyle();
-    const rawText = previousStyle.reduce(
+    const rawText = currentStyle.reduce(
       (text, style) => removeStyle(TRANSFORMS[style], text),
       currentText
     );
 
-    const styledText = style.reduce(
+    const styledText = newStyle.reduce(
       (text, style) => applyStyle(TRANSFORMS[style], text),
       rawText
     );
 
-    const content = Modifier.replaceText(
-      contentState,
-      selectionState,
+    const replaced = Modifier.replaceText(
+      content,
+      selection,
       styledText,
-      style
+      newStyle
     );
 
     this.setState({
-      editorState: EditorState.push(editorState, content, 'change-inline-style')
+      editorState: EditorState.push(
+        editorState,
+        replaced,
+        'change-inline-style'
+      )
     });
   };
 
@@ -130,6 +153,7 @@ class App extends Component {
             beforeInput={this.handleBeforeInput}
             onChange={this.onChange}
             sideButtons={[]}
+            customStyleMap={STYLE_MAP}
             toolbarConfig={{
               block: [],
               inline: ['BOLD', 'ITALIC', 'UNDERLINE']

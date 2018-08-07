@@ -6,7 +6,8 @@
     "draftjs-utils": "^0.9.4",
     "medium-draft": "^0.6.0-beta1",
     "react": "^16.4.2",
-    "react-dom": "^16.4.2"
+    "react-dom": "^16.4.2",
+    "runes": "^0.4.3"
   },
   "devDependencies": {
     "eslint-config-prettier": "^2.9.0",
