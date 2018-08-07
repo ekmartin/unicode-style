@@ -1,10 +1,20 @@
+/**
+ * TODO:
+ *  * Keyboard shortcuts
+ *  * Support for combined styles (bold + italics etc.)
+ *  * Design
+ *  * Mobile support
+ */
+
+import 'draft-js-inline-toolbar-plugin/lib/plugin.css';
+import './App.css';
+
 import React, { Component } from 'react';
 import runes from 'runes';
-import 'medium-draft/lib/index.css';
-import './App.css';
-import { Modifier, EditorState } from 'draft-js';
 import { getSelectionText } from 'draftjs-utils';
-import { HANDLED, Editor, createEditorState } from 'medium-draft';
+import Editor from 'draft-js-plugins-editor';
+import createInlineToolbarPlugin from 'draft-js-inline-toolbar-plugin';
+import { Modifier, EditorState } from 'draft-js';
 
 const MIN_LOWER = 'a'.charCodeAt(0);
 const MAX_LOWER = 'z'.charCodeAt(0);
@@ -103,13 +113,15 @@ function removeStyle(style, text) {
   return removeAppender(APPENDERS[style], text);
 }
 
+const inlineToolbarPlugin = createInlineToolbarPlugin();
+const { InlineToolbar } = inlineToolbarPlugin;
+
 class App extends Component {
-  rawState = createEditorState();
   state = {
-    editorState: createEditorState()
+    editorState: EditorState.createEmpty()
   };
 
-  handleBeforeInput = (editorState, str, onChange) => {
+  handleBeforeInput = (str, editorState) => {
     const style = editorState.getCurrentInlineStyle();
     const selection = editorState.getSelection();
     const content = editorState.getCurrentContent();
@@ -124,8 +136,8 @@ class App extends Component {
       'insert-characters'
     );
 
-    onChange(newState);
-    return HANDLED;
+    this.onChange(newState);
+    return 'handled';
   };
 
   onChange = editorState => {
@@ -183,18 +195,16 @@ class App extends Component {
     return (
       <div onClick={this.onClick} className="App">
         <div className="Content">
+          <h1>unicode.style</h1>
           <Editor
             ref="editor"
             editorState={this.state.editorState}
             beforeInput={this.handleBeforeInput}
             onChange={this.onChange}
-            sideButtons={[]}
+            plugins={[inlineToolbarPlugin]}
             customStyleMap={STYLE_MAP}
-            toolbarConfig={{
-              block: [],
-              inline: ['BOLD', 'ITALIC', 'UNDERLINE']
-            }}
           />
+          <InlineToolbar />
         </div>
       </div>
     );

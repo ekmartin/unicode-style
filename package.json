@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "draft-js": "^0.10.5",
+    "draft-js-inline-toolbar-plugin": "^2.0.3",
+    "draft-js-plugins-editor": "^2.1.1",
     "draftjs-utils": "^0.9.4",
-    "medium-draft": "^0.6.0-beta1",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "runes": "^0.4.3"
@@ -19,7 +21,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "prettier": "prettier '**/*.js' --write"
+    "prettier": "prettier '**/*.{css, js}' --write"
   },
   "prettier": {
     "singleQuote": true
