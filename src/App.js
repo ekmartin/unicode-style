@@ -31,11 +31,18 @@ const COMBINED_TRANSFORMS = {
 };
 
 const TRANSFORMS = {
+  CODE: {
+    exclusive: true,
+    surrogate: 0xd835,
+    modifier: [0xde29, 0xde2f]
+  },
   BOLD: {
+    exclusive: false,
     surrogate: 0xd835,
     modifier: [0xdd8d, 0xdd93]
   },
   ITALIC: {
+    exclusive: false,
     surrogate: 0xd835,
     modifier: [0xddc1, 0xddc7]
   }
@@ -44,7 +51,8 @@ const TRANSFORMS = {
 const STYLE_MAP = {
   BOLD: {},
   UNDERLINE: {},
-  ITALIC: {}
+  ITALIC: {},
+  CODE: {}
 };
 
 function isLower(code) {
@@ -53,6 +61,20 @@ function isLower(code) {
 
 function isCapital(code) {
   return code >= MIN_UPPER && code <= MAX_UPPER;
+}
+
+function filterStyles(oldStyles, newStyles) {
+  const exclusive = newStyles.find(s => {
+    const transform = TRANSFORMS[s];
+    return transform && transform.exclusive;
+  });
+
+  if (exclusive) {
+    const oldTransforms = oldStyles.filter(s => TRANSFORMS[s]);
+    return newStyles.subtract(oldTransforms);
+  }
+
+  return newStyles;
 }
 
 function combineStyles(styles) {
@@ -170,17 +192,18 @@ class App extends Component {
   onChange = editorState => {
     const currentContent = this.state.editorState.getCurrentContent();
     const currentStyle = this.state.editorState.getCurrentInlineStyle();
-    const newStyle = editorState.getCurrentInlineStyle();
+    const rawStyle = editorState.getCurrentInlineStyle();
     const newContent = editorState.getCurrentContent();
     const lastChange = editorState.getLastChangeType();
     if (
       currentContent === newContent ||
       lastChange !== 'change-inline-style' ||
-      currentStyle === newStyle
+      currentStyle === rawStyle
     ) {
       return this.setState({ editorState });
     }
 
+    const newStyle = filterStyles(currentStyle, rawStyle);
     const selection = editorState.getSelection();
     const content = editorState.getCurrentContent();
     const currentText = getSelectionText(editorState);
