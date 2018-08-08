@@ -1,6 +1,5 @@
 /**
  * TODO:
- *  * Support for combined styles (bold + italics etc.)
  *  * Design
  *  * Mobile support
  */
@@ -22,6 +21,13 @@ const MAX_UPPER = 'Z'.charCodeAt(0);
 
 const APPENDERS = {
   UNDERLINE: '̲'
+};
+
+const COMBINED_TRANSFORMS = {
+  BOLDITALIC: {
+    surrogate: 0xd835,
+    modifier: [0xddf5, 0xddfb]
+  }
 };
 
 const TRANSFORMS = {
@@ -47,6 +53,18 @@ function isLower(code) {
 
 function isCapital(code) {
   return code >= MIN_UPPER && code <= MAX_UPPER;
+}
+
+function combineStyles(styles) {
+  const combined = styles
+    .filter(style => TRANSFORMS[style])
+    .sort()
+    .join('');
+  const appenders = styles.map(style => APPENDERS[style]).filter(a => a);
+  const transforms =
+    COMBINED_TRANSFORMS[combined] ||
+    styles.map(s => TRANSFORMS[s]).filter(t => t);
+  return appenders.concat(transforms);
 }
 
 function applyTransform(transform, text) {
@@ -97,19 +115,19 @@ function removeAppender(appendChar, text) {
 }
 
 function applyStyle(style, text) {
-  if (TRANSFORMS[style]) {
-    return applyTransform(TRANSFORMS[style], text);
+  if (typeof style === 'string') {
+    return applyAppender(style, text);
   }
 
-  return applyAppender(APPENDERS[style], text);
+  return applyTransform(style, text);
 }
 
 function removeStyle(style, text) {
-  if (TRANSFORMS[style]) {
-    return removeTransform(TRANSFORMS[style], text);
+  if (typeof style === 'string') {
+    return removeAppender(style, text);
   }
 
-  return removeAppender(APPENDERS[style], text);
+  return removeTransform(style, text);
 }
 
 const inlineToolbarPlugin = createInlineToolbarPlugin();
@@ -134,7 +152,7 @@ class App extends Component {
     const style = editorState.getCurrentInlineStyle();
     const selection = editorState.getSelection();
     const content = editorState.getCurrentContent();
-    const styledText = style.reduce(
+    const styledText = combineStyles(style).reduce(
       (text, style) => applyStyle(style, text),
       str
     );
@@ -166,12 +184,12 @@ class App extends Component {
     const selection = editorState.getSelection();
     const content = editorState.getCurrentContent();
     const currentText = getSelectionText(editorState);
-    const rawText = currentStyle.reduce(
+    const rawText = combineStyles(currentStyle).reduce(
       (text, style) => removeStyle(style, text),
       currentText
     );
 
-    const styledText = newStyle.reduce(
+    const styledText = combineStyles(newStyle).reduce(
       (text, style) => applyStyle(style, text),
       rawText
     );
