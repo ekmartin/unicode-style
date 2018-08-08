@@ -27,6 +27,11 @@ const ScriptButton = createInlineStyleButton({
   children: createSpan('𝒮')
 });
 
+const FrakturButton = createInlineStyleButton({
+  style: 'FRAKTUR',
+  children: createSpan('𝔉')
+});
+
 const inlineToolbarPlugin = createInlineToolbarPlugin({
   structure: [
     BoldButton,
@@ -34,8 +39,9 @@ const inlineToolbarPlugin = createInlineToolbarPlugin({
     UnderlineButton,
     Separator,
     CodeButton,
-    ScriptButton,
-    DoubleButton
+    FrakturButton,
+    DoubleButton,
+    ScriptButton
   ],
   theme: { buttonStyles, toolbarStyles }
 });

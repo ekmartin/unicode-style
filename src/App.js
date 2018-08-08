@@ -46,6 +46,11 @@ const TRANSFORMS = {
     surrogate: 0xd835,
     modifier: [0xde29, 0xde2f]
   },
+  FRAKTUR: {
+    exclusive: true,
+    surrogate: 0xd835,
+    modifier: [0xdcbd, 0xdcc3]
+  },
   BOLD: {
     exclusive: false,
     surrogate: 0xd835,
@@ -64,7 +69,8 @@ const STYLE_MAP = {
   ITALIC: {},
   CODE: {},
   DOUBLE: {},
-  SCRIPT: {}
+  SCRIPT: {},
+  FRAKTUR: {}
 };
 
 function isLower(code) {
