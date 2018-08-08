@@ -1,8 +1,13 @@
 /**
  * TODO:
+ *  * Toolbar shouldn't close on clicks
+ *      Need to calculate a new SelectionState after changes
+ *      (find the new focusOffset based on the content)
  *  * Design
  *  * Mobile support
  *  * Support numbers
+ *  * Tweet button
+ *  * Copy to clipboard button
  */
 
 import 'draft-js-inline-toolbar-plugin/lib/plugin.css';
