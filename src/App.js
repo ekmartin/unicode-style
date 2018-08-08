@@ -2,6 +2,7 @@
  * TODO:
  *  * Design
  *  * Mobile support
+ *  * Support numbers
  */
 
 import 'draft-js-inline-toolbar-plugin/lib/plugin.css';
@@ -23,9 +24,9 @@ const APPENDERS = {
   UNDERLINE: '̲'
 };
 
+const SURROGATE = 0xd835;
 const COMBINED_TRANSFORMS = {
   BOLDITALIC: {
-    surrogate: 0xd835,
     modifier: [0xddf5, 0xddfb]
   }
 };
@@ -33,32 +34,26 @@ const COMBINED_TRANSFORMS = {
 const TRANSFORMS = {
   DOUBLE: {
     exclusive: true,
-    surrogate: 0xd835,
     modifier: [0xdcf1, 0xdcf7]
   },
   SCRIPT: {
     exclusive: true,
-    surrogate: 0xd835,
     modifier: [0xdc55, 0xdc5b]
   },
   CODE: {
     exclusive: true,
-    surrogate: 0xd835,
     modifier: [0xde29, 0xde2f]
   },
   FRAKTUR: {
     exclusive: true,
-    surrogate: 0xd835,
     modifier: [0xdcbd, 0xdcc3]
   },
   BOLD: {
     exclusive: false,
-    surrogate: 0xd835,
     modifier: [0xdd8d, 0xdd93]
   },
   ITALIC: {
     exclusive: false,
-    surrogate: 0xd835,
     modifier: [0xddc1, 0xddc7]
   }
 };
@@ -108,13 +103,13 @@ function combineStyles(styles) {
 }
 
 function applyTransform(transform, text) {
-  const { modifier, surrogate } = transform;
+  const { modifier } = transform;
   return runes(text)
     .map(char => {
       const code = char.charCodeAt(0);
       if (isCapital(code) || isLower(code)) {
         const mod = isCapital(code) ? modifier[1] : modifier[0];
-        return String.fromCharCode(surrogate, mod + code);
+        return String.fromCharCode(SURROGATE, mod + code);
       }
 
       return char;
@@ -127,10 +122,10 @@ function applyAppender(appendChar, text) {
 }
 
 function removeTransform(transform, text) {
-  const { modifier, surrogate } = transform;
+  const { modifier } = transform;
   return runes(text)
     .map(char => {
-      if (char.charCodeAt(0) !== surrogate) {
+      if (char.charCodeAt(0) !== SURROGATE) {
         return char;
       }
 
