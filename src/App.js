@@ -36,6 +36,11 @@ const TRANSFORMS = {
     surrogate: 0xd835,
     modifier: [0xdcf1, 0xdcf7]
   },
+  SCRIPT: {
+    exclusive: true,
+    surrogate: 0xd835,
+    modifier: [0xdc55, 0xdc5b]
+  },
   CODE: {
     exclusive: true,
     surrogate: 0xd835,
@@ -58,7 +63,8 @@ const STYLE_MAP = {
   UNDERLINE: {},
   ITALIC: {},
   CODE: {},
-  DOUBLE: {}
+  DOUBLE: {},
+  SCRIPT: {}
 };
 
 function isLower(code) {
