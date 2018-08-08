@@ -255,7 +255,11 @@ class App extends Component {
     return (
       <div onClick={this.onClick} className="App">
         <div className="Content">
-          <h1>unicode.style</h1>
+          <h1>
+            <span>unicode</span>
+            <span style={{ color: '#bbb' }}>.</span>
+            <i>style</i>
+          </h1>
           <Editor
             ref="editor"
             editorState={this.state.editorState}
