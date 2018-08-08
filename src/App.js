@@ -11,8 +11,8 @@ import React, { Component } from 'react';
 import runes from 'runes';
 import { getSelectionText } from 'draftjs-utils';
 import Editor from 'draft-js-plugins-editor';
-import createInlineToolbarPlugin from 'draft-js-inline-toolbar-plugin';
 import { Modifier, EditorState, RichUtils } from 'draft-js';
+import { InlineToolbar, inlineToolbarPlugin } from './Toolbar';
 
 const MIN_LOWER = 'a'.charCodeAt(0);
 const MAX_LOWER = 'z'.charCodeAt(0);
@@ -31,6 +31,11 @@ const COMBINED_TRANSFORMS = {
 };
 
 const TRANSFORMS = {
+  DOUBLE: {
+    exclusive: true,
+    surrogate: 0xd835,
+    modifier: [0xdcf1, 0xdcf7]
+  },
   CODE: {
     exclusive: true,
     surrogate: 0xd835,
@@ -52,7 +57,8 @@ const STYLE_MAP = {
   BOLD: {},
   UNDERLINE: {},
   ITALIC: {},
-  CODE: {}
+  CODE: {},
+  DOUBLE: {}
 };
 
 function isLower(code) {
@@ -151,9 +157,6 @@ function removeStyle(style, text) {
 
   return removeTransform(style, text);
 }
-
-const inlineToolbarPlugin = createInlineToolbarPlugin();
-const { InlineToolbar } = inlineToolbarPlugin;
 
 class App extends Component {
   state = {
