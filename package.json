@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "draft-js": "^0.10.5",
+    "draft-js-buttons": "^2.0.1",
     "draft-js-inline-toolbar-plugin": "^2.0.3",
     "draft-js-plugins-editor": "^2.1.1",
     "draftjs-utils": "^0.9.4",
@@ -14,7 +15,7 @@
   "devDependencies": {
     "eslint-config-prettier": "^2.9.0",
     "prettier": "^1.14.0",
-    "react-scripts": "1.1.4"
+    "react-scripts": "2.0.0-next.3e165448"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -34,5 +35,17 @@
     "parserOptions": {
       "ecmaVersion": 8
     }
+  },
+  "browserslist": {
+    "development": [
+      "last 2 chrome versions",
+      "last 2 firefox versions",
+      "last 2 edge versions"
+    ],
+    "production": [
+      ">0.25%",
+      "not op_mini all",
+      "ie 11"
+    ]
   }
 }
