@@ -6,8 +6,7 @@
  *  * Design
  *  * Mobile support
  *  * Support numbers
- *  * Tweet button
- *  * Copy to clipboard button
+ *  * Undo/redo needs to group style changes with the text modifications
  */
 
 import 'draft-js-inline-toolbar-plugin/lib/plugin.css';
