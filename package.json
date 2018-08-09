@@ -2,7 +2,7 @@
   "name": "unicode-style",
   "version": "0.1.0",
   "private": true,
-  "homepage": "unicode.style",
+  "homepage": "https://unicode.style",
   "dependencies": {
     "draft-js": "^0.10.5",
     "draft-js-buttons": "^2.0.1",
