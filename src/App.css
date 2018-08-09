@@ -4,9 +4,8 @@ body {
   color: rgba(0, 0, 0, 0.9);
 }
 
-.App {
-  width: 100%;
-  height: 100vh;
+.public-DraftEditor-content {
+  min-height: 300px;
 }
 
 .Content {

@@ -11,8 +11,8 @@
  */
 
 import 'draft-js-inline-toolbar-plugin/lib/plugin.css';
+import 'draft-js/dist/Draft.css';
 import './App.css';
-
 import React, { Component } from 'react';
 import runes from 'runes';
 import { getSelectionText } from 'draftjs-utils';
@@ -248,25 +248,22 @@ class App extends Component {
     });
   };
 
-  onClick = () => {
-    this.refs.editor.focus();
-  };
-
   componentDidMount() {
     this.refs.editor.focus();
   }
 
   render() {
     return (
-      <div onClick={this.onClick} className="App">
+      <div className="App">
         <div className="Content">
           <h1>
             <span>unicode</span>
-            <span style={{ color: '#bbb' }}>.</span>
+            <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>.</span>
             <i>style</i>
           </h1>
           <Editor
             ref="editor"
+            placeholder="Write, highlight, and style away."
             editorState={this.state.editorState}
             handleKeyCommand={this.handleKeyCommand}
             handleBeforeInput={this.handleBeforeInput}
