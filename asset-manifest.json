@@ -1,0 +1,11 @@
+{
+  "runtime~main.js": "unicode.style/static/js/runtime~main.084c1b5b.js",
+  "runtime~main.js.map": "unicode.style/static/js/runtime~main.084c1b5b.js.map",
+  "vendors.css": "unicode.style/static/css/vendors.c8056e36.chunk.css",
+  "vendors.js": "unicode.style/static/js/vendors.68ea4f99.chunk.js",
+  "vendors.js.map": "unicode.style/static/js/vendors.68ea4f99.chunk.js.map",
+  "main.css": "unicode.style/static/css/main.ea5946cf.chunk.css",
+  "main.js": "unicode.style/static/js/main.f40bd4f6.chunk.js",
+  "main.js.map": "unicode.style/static/js/main.f40bd4f6.chunk.js.map",
+  "index.html": "unicode.style/index.html"
+}
