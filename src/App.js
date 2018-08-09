@@ -196,7 +196,7 @@ class App extends Component {
 
     const newState = EditorState.push(
       editorState,
-      Modifier.insertText(content, selection, styledText, style),
+      Modifier.replaceText(content, selection, styledText, style),
       'insert-characters'
     );
 
