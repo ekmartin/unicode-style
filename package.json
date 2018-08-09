@@ -10,7 +10,8 @@
     "draftjs-utils": "^0.9.4",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
-    "runes": "^0.4.3"
+    "runes": "^0.4.3",
+    "svg-react-loader": "^0.4.5"
   },
   "devDependencies": {
     "eslint-config-prettier": "^2.9.0",

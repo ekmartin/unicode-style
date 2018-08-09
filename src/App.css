@@ -5,7 +5,8 @@ body {
 }
 
 .public-DraftEditor-content {
-  min-height: 300px;
+  min-height: 100px;
+  margin: 20px 0;
 }
 
 .Content {

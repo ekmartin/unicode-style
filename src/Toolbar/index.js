@@ -1,6 +1,6 @@
 import React from 'react';
 import toolbarStyles from './Toolbar.module.css';
-import buttonStyles from './Button.module.css';
+import buttonStyles from './ToolbarButton.module.css';
 import createInlineToolbarPlugin, {
   Separator
 } from 'draft-js-inline-toolbar-plugin';

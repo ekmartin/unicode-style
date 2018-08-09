@@ -19,6 +19,7 @@ import { getSelectionText } from 'draftjs-utils';
 import Editor from 'draft-js-plugins-editor';
 import { Modifier, EditorState, RichUtils } from 'draft-js';
 import { InlineToolbar, inlineToolbarPlugin } from './Toolbar';
+import Buttons from './Buttons';
 
 const MIN_LOWER = 'a'.charCodeAt(0);
 const MAX_LOWER = 'z'.charCodeAt(0);
@@ -253,18 +254,20 @@ class App extends Component {
   }
 
   render() {
+    const { editorState } = this.state;
+    const plainText = editorState.getCurrentContent().getPlainText();
     return (
       <div className="App">
         <div className="Content">
           <h1>
             <span>unicode</span>
-            <span style={{ color: 'rgba(0, 0, 0, 0.45)' }}>.</span>
+            <span style={{ color: '#05f' }}>.</span>
             <i>style</i>
           </h1>
           <Editor
             ref="editor"
             placeholder="Write, highlight, and style away."
-            editorState={this.state.editorState}
+            editorState={editorState}
             handleKeyCommand={this.handleKeyCommand}
             handleBeforeInput={this.handleBeforeInput}
             onChange={this.onChange}
@@ -272,6 +275,7 @@ class App extends Component {
             customStyleMap={STYLE_MAP}
           />
           <InlineToolbar />
+          <Buttons text={plainText} />
         </div>
       </div>
     );
