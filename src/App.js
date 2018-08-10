@@ -3,8 +3,7 @@
  *  * Toolbar shouldn't close on clicks
  *      Need to calculate a new SelectionState after changes
  *      (find the new focusOffset based on the content)
- *  * Design
- *  * Mobile support
+ *  * Use a static toolbar on mobile
  *  * Support numbers
  *  * Undo/redo needs to group style changes with the text modifications
  */
