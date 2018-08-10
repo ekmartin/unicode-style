@@ -1,8 +1,5 @@
 /**
  * TODO:
- *  * Toolbar shouldn't close on clicks
- *      Need to calculate a new SelectionState after changes
- *      (find the new focusOffset based on the content)
  *  * Use a static toolbar on mobile
  *  * Support numbers
  *  * Undo/redo needs to group style changes with the text modifications
@@ -17,7 +14,7 @@ import runes from 'runes';
 import { getSelectionText } from 'draftjs-utils';
 import Editor from 'draft-js-plugins-editor';
 import cx from 'classnames';
-import { Modifier, EditorState, RichUtils } from 'draft-js';
+import { Modifier, EditorState, RichUtils, SelectionState } from 'draft-js';
 import { InlineToolbar, inlineToolbarPlugin } from './Toolbar';
 import Buttons from './Buttons';
 import Header from './Header';
@@ -27,17 +24,14 @@ const MAX_LOWER = 'z'.charCodeAt(0);
 const MIN_UPPER = 'A'.charCodeAt(0);
 const MAX_UPPER = 'Z'.charCodeAt(0);
 
-const APPENDERS = {
-  UNDERLINE: '̲'
-};
-
+// A styled unicode character is built up of
+// two UTF-16 code points, where the first is a surrogate.
 const SURROGATE = 0xd835;
-const COMBINED_TRANSFORMS = {
-  BOLDITALIC: {
-    modifier: [0xddf5, 0xddfb]
-  }
-};
 
+// Each transform consists of a modifier for lowercase and a modifier for
+// uppercase characters. To go from e.g. A to 𝔸, the character code for A, 65,
+// is added to the uppercase modifier for DOUBLE, 0xdcf7, and prefixed with a
+// unicode surrogate.
 const TRANSFORMS = {
   DOUBLE: {
     exclusive: true,
@@ -65,6 +59,20 @@ const TRANSFORMS = {
   }
 };
 
+const COMBINED_TRANSFORMS = {
+  BOLDITALIC: {
+    modifier: [0xddf5, 0xddfb]
+  }
+};
+
+// To e.g. underline a character, a
+// specific unicode character is appended prior to it.
+const APPENDERS = {
+  UNDERLINE: '̲'
+};
+
+// Remove any CSS changes from inline styles, since we're styling by changing
+// the content — not applying CSS rules.
 const STYLE_MAP = {
   BOLD: {},
   UNDERLINE: {},
@@ -75,14 +83,16 @@ const STYLE_MAP = {
   FRAKTUR: {}
 };
 
-function isLower(code) {
-  return code >= MIN_LOWER && code <= MAX_LOWER;
-}
+const isLower = code => code >= MIN_LOWER && code <= MAX_LOWER;
+const isCapital = code => code >= MIN_UPPER && code <= MAX_UPPER;
 
-function isCapital(code) {
-  return code >= MIN_UPPER && code <= MAX_UPPER;
-}
-
+/**
+ * Since there's e.g., no unicode character for bold monospace, a few of the
+ * styles are marked as exclusive. filterStyles makes sure to remove any
+ * existing transforms when an exclusive style is applied. The same goes the
+ * other way as well, when a common style is applied while an existing
+ * exclusive style is active, the common one takes presedence.
+ */
 function filterStyles(oldStyles, newStyles) {
   const exclusive = newStyles.find(s => {
     const transform = TRANSFORMS[s];
@@ -97,6 +107,9 @@ function filterStyles(oldStyles, newStyles) {
   return newStyles;
 }
 
+/**
+ * Turns e.g., BOLD and ITALIC into BOLDITALIC.
+ */
 function combineStyles(styles) {
   const combined = styles
     .filter(style => TRANSFORMS[style])
@@ -109,6 +122,10 @@ function combineStyles(styles) {
   return appenders.concat(transforms);
 }
 
+/**
+ * Applies a transform by building characters using
+ * a surrogate and a modifier from TRANSFORMS.
+ */
 function applyTransform(transform, text) {
   const { modifier } = transform;
   return runes(text)
@@ -124,10 +141,18 @@ function applyTransform(transform, text) {
     .join('');
 }
 
+/**
+ * Styles text using appenders by prepending each
+ * character with the given appendChar.
+ */
 function applyAppender(appendChar, text) {
   return runes(text).reduce((str, char) => str + char + appendChar, '');
 }
 
+/**
+ * Reverts the work done by applyTransform by removing the correct modifier,
+ * depending on whether a character is lower- or uppercase.
+ */
 function removeTransform(transform, text) {
   const { modifier } = transform;
   return runes(text)
@@ -149,6 +174,9 @@ function removeTransform(transform, text) {
     .join('');
 }
 
+/**
+ * Removes appended characters, e.g., underline modifiers.
+ */
 function removeAppender(appendChar, text) {
   return text
     .split('')
@@ -156,6 +184,9 @@ function removeAppender(appendChar, text) {
     .join('');
 }
 
+/**
+ * Applies the given style type to `text`.
+ */
 function applyStyle(style, text) {
   if (typeof style === 'string') {
     return applyAppender(style, text);
@@ -164,12 +195,50 @@ function applyStyle(style, text) {
   return applyTransform(style, text);
 }
 
+/**
+ * Removes the given style type from `text`.
+ */
 function removeStyle(style, text) {
   if (typeof style === 'string') {
     return removeAppender(style, text);
   }
 
   return removeTransform(style, text);
+}
+
+/**
+ * Draft.js resets the selection after content changes, but we'd rather
+ * maintain it, so that you can apply multiple styles to the same selection in
+ * succession. At the same time, abc is not the same as 𝙖𝙗𝙘 (bold) — it has a
+ * different size. To maintain the same selection after a style change, we need
+ * to calculate the new offsets by taking the size change into consideration.
+ */
+function buildSelection(oldText, newText, selection) {
+  const diff = newText.length - oldText.length;
+  const isBackward = selection.getIsBackward();
+  const options = {
+    anchorKey: selection.getAnchorKey(),
+    focusKey: selection.getFocusKey(),
+    isBackward: selection.getIsBackward(),
+    hasFocus: true
+  };
+
+  // For backwards selections (i.e. selections from right to left), the focus
+  // stays the same while the anchor moves slightly to the right:
+  if (isBackward) {
+    return new SelectionState({
+      ...options,
+      focusOffset: selection.getFocusOffset(),
+      anchorOffset: selection.getAnchorOffset() + diff
+    });
+  }
+
+  // Whereas for regular selections, we need to move the focus:
+  return new SelectionState({
+    ...options,
+    focusOffset: selection.getFocusOffset() + diff,
+    anchorOffset: selection.getAnchorOffset()
+  });
 }
 
 class App extends Component {
@@ -220,10 +289,14 @@ class App extends Component {
       return this.setState({ editorState });
     }
 
-    const newStyle = filterStyles(currentStyle, rawStyle);
     const selection = editorState.getSelection();
+    const newStyle = filterStyles(currentStyle, rawStyle);
     const content = editorState.getCurrentContent();
     const currentText = getSelectionText(editorState);
+
+    // To go from e.g. bold to bold and italics, we need to first remove the
+    // existing bold styling, before applying both bold and italics together in
+    // one pass:
     const rawText = combineStyles(currentStyle).reduce(
       (text, style) => removeStyle(style, text),
       currentText
@@ -241,12 +314,17 @@ class App extends Component {
       newStyle
     );
 
+    const newState = EditorState.push(
+      editorState,
+      replaced,
+      'change-inline-style'
+    );
+
+    // Calculate the new selection and force it, so that it doesn't get
+    // collapsed by Draft.js when the content changes:
+    const newSelection = buildSelection(currentText, styledText, selection);
     this.setState({
-      editorState: EditorState.push(
-        editorState,
-        replaced,
-        'change-inline-style'
-      )
+      editorState: EditorState.forceSelection(newState, newSelection)
     });
   };
 
