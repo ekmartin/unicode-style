@@ -26,9 +26,10 @@
     "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject",
-    "prettier": "prettier '**/*.{css, js}' --write"
+    "lint:eslint": "eslint --ignore-path .gitignore .",
+    "lint:prettier": "prettier '**/*.{css, js}' --ignore-path .gitignore --list-different",
+    "prettier": "prettier '**/*.{css, js}' --ignore-path .gitignore --write",
+    "test": "npm run lint:eslint && npm run lint:prettier"
   },
   "prettier": {
     "singleQuote": true
