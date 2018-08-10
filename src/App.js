@@ -9,6 +9,7 @@
  *  * Undo/redo needs to group style changes with the text modifications
  */
 
+import 'sanitize.css';
 import 'draft-js-inline-toolbar-plugin/lib/plugin.css';
 import 'draft-js/dist/Draft.css';
 import './App.css';

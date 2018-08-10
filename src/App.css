@@ -1,15 +1,19 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  font-size: 24px;
   color: rgba(0, 0, 0, 0.9);
 }
 
 .public-DraftEditor-content {
   min-height: 100px;
-  margin: 20px 0;
+  cursor: text;
+  margin-bottom: 40px;
 }
 
 .Content {
-  max-width: 600px;
-  margin: 30px auto;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 30px;
+  margin-top: 65px;
 }

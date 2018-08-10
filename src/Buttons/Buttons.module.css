@@ -7,10 +7,10 @@
   text-decoration: none;
   cursor: pointer;
   padding: 0 21px;
-  height: 34px;
+  height: 44px;
   border: 2px solid #05f;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 18px;
 
   display: flex;
   justify-content: center;
@@ -18,8 +18,8 @@
 }
 
 .buttons svg {
-  height: 12px;
-  margin-right: 5px;
+  height: 16px;
+  margin-right: 8px;
 }
 
 .copy {
