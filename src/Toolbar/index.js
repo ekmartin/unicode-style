@@ -24,7 +24,7 @@ const DoubleButton = createInlineStyleButton({
 
 const ScriptButton = createInlineStyleButton({
   style: 'SCRIPT',
-  children: createSpan('𝒮')
+  children: createSpan('𝓢')
 });
 
 const FrakturButton = createInlineStyleButton({
