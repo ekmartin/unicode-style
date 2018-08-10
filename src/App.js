@@ -12,14 +12,16 @@
 import 'sanitize.css';
 import 'draft-js-inline-toolbar-plugin/lib/plugin.css';
 import 'draft-js/dist/Draft.css';
-import './App.css';
+import styles from './App.module.css';
 import React, { Component } from 'react';
 import runes from 'runes';
 import { getSelectionText } from 'draftjs-utils';
 import Editor from 'draft-js-plugins-editor';
+import cx from 'classnames';
 import { Modifier, EditorState, RichUtils } from 'draft-js';
 import { InlineToolbar, inlineToolbarPlugin } from './Toolbar';
 import Buttons from './Buttons';
+import Header from './Header';
 
 const MIN_LOWER = 'a'.charCodeAt(0);
 const MAX_LOWER = 'z'.charCodeAt(0);
@@ -257,26 +259,24 @@ class App extends Component {
     const { editorState } = this.state;
     const plainText = editorState.getCurrentContent().getPlainText();
     return (
-      <div className="App">
-        <div className="Content">
-          <h1>
-            <span>unicode</span>
-            <span style={{ color: '#05f' }}>.</span>
-            <i>style</i>
-          </h1>
-          <Editor
-            ref="editor"
-            placeholder="Write, highlight, and style away."
-            editorState={editorState}
-            handleKeyCommand={this.handleKeyCommand}
-            handleBeforeInput={this.handleBeforeInput}
-            onChange={this.onChange}
-            plugins={[inlineToolbarPlugin]}
-            customStyleMap={STYLE_MAP}
-          />
-          <InlineToolbar />
-          <Buttons text={plainText} />
-        </div>
+      <div className={styles.content}>
+        <Header />
+        <p className={cx(styles.paragraph, { [styles.faded]: plainText })}>
+          Format text using unicode characters. Paste anywhere that accepts
+          plain text.
+        </p>
+        <Editor
+          ref="editor"
+          placeholder="Write, highlight, and style away."
+          editorState={editorState}
+          handleKeyCommand={this.handleKeyCommand}
+          handleBeforeInput={this.handleBeforeInput}
+          onChange={this.onChange}
+          plugins={[inlineToolbarPlugin]}
+          customStyleMap={STYLE_MAP}
+        />
+        <InlineToolbar />
+        <Buttons text={plainText} />
       </div>
     );
   }

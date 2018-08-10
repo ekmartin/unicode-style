@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "https://unicode.style",
   "dependencies": {
+    "classnames": "^2.2.6",
     "draft-js": "^0.10.5",
     "draft-js-buttons": "^2.0.1",
     "draft-js-inline-toolbar-plugin": "^2.0.3",
