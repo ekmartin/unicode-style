@@ -13,7 +13,7 @@ body {
 .content {
   max-width: 800px;
   margin: 0 auto;
-  padding: 0 30px;
+  padding: 0 50px;
   margin-top: 65px;
 }
 
@@ -29,4 +29,16 @@ body {
   min-height: 100px;
   cursor: text;
   margin-bottom: 40px;
+}
+
+@media (max-width: 400px) {
+  body {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 800px) {
+  .content {
+    margin-top: 40px;
+  }
 }

@@ -1,9 +1,16 @@
 .buttons {
   display: flex;
+  align-items: baseline;
 }
 
-.buttons > button,
-.buttons > a {
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-content: baseline;
+}
+
+.copy,
+.tweet {
   text-decoration: none;
   cursor: pointer;
   padding: 0 21px;
@@ -17,9 +24,21 @@
   align-items: center;
 }
 
+.github {
+  margin-left: auto;
+  text-decoration: none;
+  font-size: 12px;
+  color: rgba(0, 85, 255, 0.87);
+}
+
 .buttons svg {
   height: 16px;
   margin-right: 8px;
+}
+
+.github svg {
+  margin-right: 2px;
+  height: 12px;
 }
 
 .copy {
@@ -38,4 +57,36 @@
 
 .tweet > svg {
   fill: white;
+}
+
+@media (max-width: 400px) {
+  .copy,
+  .tweet {
+    padding: 0 15px;
+    font-size: 12px;
+  }
+
+  .buttons svg {
+    height: 10px;
+  }
+
+  .github {
+    font-size: 10px;
+  }
+
+  .github svg {
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 500px) {
+  .buttons {
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .github {
+    margin: 0;
+    margin-top: 20px;
+  }
 }
