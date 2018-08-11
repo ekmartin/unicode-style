@@ -1,5 +1,7 @@
+// @flow
 import { Modifier, EditorState, SelectionState } from 'draft-js';
 import { getSelectionText } from 'draftjs-utils';
+import type { OrderedSet } from 'immutable';
 import runes from 'runes';
 
 const MIN_LOWER = 'a'.charCodeAt(0);
@@ -10,6 +12,15 @@ const MAX_UPPER = 'Z'.charCodeAt(0);
 // A styled unicode character is built up of
 // two UTF-16 code points, where the first is a surrogate.
 const SURROGATE = 0xd835;
+
+type Transform = {
+  exclusive: boolean,
+  modifier: [number, number]
+};
+
+type Appender = string;
+
+type Style = Appender | Transform;
 
 // Each transform consists of a modifier for lowercase and a modifier for
 // uppercase characters. To go from e.g. A to 𝔸, the character code for A, 65,
@@ -64,7 +75,10 @@ const isCapital = code => code >= MIN_UPPER && code <= MAX_UPPER;
  * other way as well, when a common style is applied while an existing
  * exclusive style is active, the common one takes presedence.
  */
-function filterStyles(oldStyles, newStyles) {
+function filterStyles(
+  oldStyles: OrderedSet<string>,
+  newStyles: OrderedSet<string>
+): OrderedSet<string> {
   const exclusive = newStyles.find(s => {
     const transform = TRANSFORMS[s];
     return transform && transform.exclusive;
@@ -81,7 +95,7 @@ function filterStyles(oldStyles, newStyles) {
 /**
  * Turns e.g., BOLD and ITALIC into BOLDITALIC.
  */
-function combineStyles(styles) {
+function combineStyles(styles: OrderedSet<string>): Array<Style> {
   const combined = styles
     .filter(style => TRANSFORMS[style])
     .sort()
@@ -97,7 +111,7 @@ function combineStyles(styles) {
  * Applies a transform by building characters using
  * a surrogate and a modifier from TRANSFORMS.
  */
-function applyTransform(transform, text) {
+function applyTransform(transform: Transform, text: string): string {
   const { modifier } = transform;
   return runes(text)
     .map(char => {
@@ -116,7 +130,7 @@ function applyTransform(transform, text) {
  * Styles text using appenders by prepending each
  * character with the given appendChar.
  */
-function applyAppender(appendChar, text) {
+function applyAppender(appendChar: Appender, text: string): string {
   return runes(text).reduce((str, char) => str + char + appendChar, '');
 }
 
@@ -124,7 +138,7 @@ function applyAppender(appendChar, text) {
  * Reverts the work done by applyTransform by removing the correct modifier,
  * depending on whether a character is lower- or uppercase.
  */
-function removeTransform(transform, text) {
+function removeTransform(transform: Transform, text: string) {
   const { modifier } = transform;
   return runes(text)
     .map(char => {
@@ -148,7 +162,7 @@ function removeTransform(transform, text) {
 /**
  * Removes appended characters, e.g., underline modifiers.
  */
-function removeAppender(appendChar, text) {
+function removeAppender(appendChar: Appender, text: string): string {
   return text
     .split('')
     .filter(c => c !== appendChar)
@@ -158,7 +172,7 @@ function removeAppender(appendChar, text) {
 /**
  * Applies the given style type to `text`.
  */
-function applyStyle(style, text) {
+function applyStyle(style: Style, text: string): string {
   if (typeof style === 'string') {
     return applyAppender(style, text);
   }
@@ -169,7 +183,7 @@ function applyStyle(style, text) {
 /**
  * Removes the given style type from `text`.
  */
-function removeStyle(style, text) {
+function removeStyle(style: Style, text: string): string {
   if (typeof style === 'string') {
     return removeAppender(style, text);
   }
@@ -184,7 +198,11 @@ function removeStyle(style, text) {
  * different size. To maintain the same selection after a style change, we need
  * to calculate the new offsets by taking the size change into consideration.
  */
-function buildSelection(oldText, newText, selection) {
+function buildSelection(
+  oldText: string,
+  newText: string,
+  selection: SelectionState
+): SelectionState {
   const diff = newText.length - oldText.length;
   const isBackward = selection.getIsBackward();
   const options = {
@@ -216,7 +234,10 @@ function buildSelection(oldText, newText, selection) {
  * Applies the current inline styles to the newly inserted `characters` by
  * replacing each one with an applicable unicode character
  */
-export function styleInsertion(editorState, characters) {
+export function styleInsertion(
+  editorState: EditorState,
+  characters: string
+): EditorState {
   const style = editorState.getCurrentInlineStyle();
   const selection = editorState.getSelection();
   const content = editorState.getCurrentContent();
@@ -236,7 +257,10 @@ export function styleInsertion(editorState, characters) {
  * Applies inline styles by modifying the selected characters to suitable
  * unicode replacements.
  */
-export function styleSelection(oldEditorState, editorState) {
+export function styleSelection(
+  oldEditorState: EditorState,
+  editorState: EditorState
+): EditorState {
   const currentStyle = oldEditorState.getCurrentInlineStyle();
   const rawStyle = editorState.getCurrentInlineStyle();
   const selection = editorState.getSelection();
@@ -248,12 +272,12 @@ export function styleSelection(oldEditorState, editorState) {
   // existing bold styling, before applying both bold and italics together in
   // one pass:
   const rawText = combineStyles(currentStyle).reduce(
-    (text, style) => removeStyle(style, text),
+    (text: string, style: Style) => removeStyle(style, text),
     currentText
   );
 
   const styledText = combineStyles(newStyle).reduce(
-    (text, style) => applyStyle(style, text),
+    (text: string, style: Style) => applyStyle(style, text),
     rawText
   );
 

@@ -1,11 +1,13 @@
+// @flow
 import 'sanitize.css';
 import 'draft-js-inline-toolbar-plugin/lib/plugin.css';
 import 'draft-js/dist/Draft.css';
 import styles from './App.module.css';
-import React, { Component } from 'react';
+import * as React from 'react';
 import Editor from 'draft-js-plugins-editor';
 import cx from 'classnames';
 import { EditorState, RichUtils } from 'draft-js';
+import type { DraftHandleValue } from 'draft-js/lib/DraftHandleValue';
 import { styleInsertion, styleSelection } from './transform';
 import { InlineToolbar, inlineToolbarPlugin } from './Toolbar';
 import Buttons from './Buttons';
@@ -23,12 +25,21 @@ const STYLE_MAP = {
   FRAKTUR: {}
 };
 
-class App extends Component {
+type Props = {};
+
+type State = {
+  editorState: EditorState
+};
+
+class App extends React.Component<Props, State> {
   state = {
     editorState: EditorState.createEmpty()
   };
 
-  handleKeyCommand = (command, editorState) => {
+  handleKeyCommand = (
+    command: string,
+    editorState: EditorState
+  ): DraftHandleValue => {
     const newState = RichUtils.handleKeyCommand(editorState, command);
     if (newState) {
       this.onChange(newState);
@@ -38,13 +49,16 @@ class App extends Component {
     return 'not-handled';
   };
 
-  handleBeforeInput = (str, editorState) => {
+  handleBeforeInput = (
+    str: string,
+    editorState: EditorState
+  ): DraftHandleValue => {
     const newState = styleInsertion(editorState, str);
     this.onChange(newState);
     return 'handled';
   };
 
-  onChange = editorState => {
+  onChange = (editorState: EditorState) => {
     const currentContent = this.state.editorState.getCurrentContent();
     const currentStyle = this.state.editorState.getCurrentInlineStyle();
     const rawStyle = editorState.getCurrentInlineStyle();

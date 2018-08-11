@@ -1,23 +1,36 @@
+// @flow
 /* eslint-disable import/no-webpack-loader-syntax */
 import styles from './Buttons.module.css';
+// $FlowFixMe
 import CopyIcon from '-!svg-react-loader!./copy.svg';
+// $FlowFixMe
 import TweetIcon from '-!svg-react-loader!./twitter.svg';
+// $FlowFixMe
 import GitHubIcon from '-!svg-react-loader!./github.svg';
-import React, { Component } from 'react';
+import * as React from 'react';
 
 const TWEET_URL = 'https://twitter.com/intent/tweet';
 
-export default class Buttons extends Component {
+type Props = {
+  text: string
+};
+
+export default class Buttons extends React.Component<Props> {
   onCopy = () => {
     const element = document.createElement('textarea');
     element.value = this.props.text;
     element.setAttribute('readonly', '');
     element.style.position = 'absolute';
     element.style.left = '-9999px';
-    document.body.appendChild(element);
+    const { body } = document;
+    if (!body) {
+      throw new Error('No document');
+    }
+
+    body.appendChild(element);
     element.select();
     document.execCommand('copy');
-    document.body.removeChild(element);
+    body.removeChild(element);
   };
 
   render() {

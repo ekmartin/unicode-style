@@ -10,7 +10,9 @@
     "draft-js-inline-toolbar-plugin": "^2.0.3",
     "draft-js-plugins-editor": "^2.1.1",
     "draftjs-utils": "^0.9.4",
+    "flow-bin": "^0.78.0",
     "gh-pages": "^1.2.0",
+    "immutable": "^3.8.2",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "runes": "^0.4.3",
@@ -27,10 +29,11 @@
     "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "flow": "flow",
     "lint:eslint": "eslint --ignore-path .gitignore .",
     "lint:prettier": "prettier '**/*.{css, js}' --ignore-path .gitignore --list-different",
     "prettier": "prettier '**/*.{css, js}' --ignore-path .gitignore --write",
-    "test": "npm run lint:eslint && npm run lint:prettier"
+    "test": "npm run lint:eslint && npm run lint:prettier && npm run flow"
   },
   "prettier": {
     "singleQuote": true

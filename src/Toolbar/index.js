@@ -1,3 +1,4 @@
+// @flow
 import React from 'react';
 import toolbarStyles from './Toolbar.module.css';
 import buttonStyles from './ToolbarButton.module.css';
