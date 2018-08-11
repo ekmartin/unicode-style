@@ -1,11 +1,11 @@
 {
   "runtime~main.js": "/static/js/runtime~main.41117e05.js",
   "runtime~main.js.map": "/static/js/runtime~main.41117e05.js.map",
-  "vendors.css": "/static/css/vendors.d9633f61.chunk.css",
-  "vendors.js": "/static/js/vendors.d40353a4.chunk.js",
-  "vendors.js.map": "/static/js/vendors.d40353a4.chunk.js.map",
-  "main.css": "/static/css/main.ebed715a.chunk.css",
-  "main.js": "/static/js/main.71b8def6.chunk.js",
-  "main.js.map": "/static/js/main.71b8def6.chunk.js.map",
+  "vendors.css": "/static/css/vendors.b72422ad.chunk.css",
+  "vendors.js": "/static/js/vendors.e89dc569.chunk.js",
+  "vendors.js.map": "/static/js/vendors.e89dc569.chunk.js.map",
+  "main.css": "/static/css/main.ba8bd429.chunk.css",
+  "main.js": "/static/js/main.8abc559e.chunk.js",
+  "main.js.map": "/static/js/main.8abc559e.chunk.js.map",
   "index.html": "/index.html"
 }
