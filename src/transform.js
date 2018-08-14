@@ -62,7 +62,8 @@ const COMBINED_TRANSFORMS = {
 // To e.g. underline a character, a
 // specific unicode character is appended prior to it.
 const APPENDERS = {
-  UNDERLINE: '̲'
+  UNDERLINE: '̲',
+  STRIKETHROUGH: '̶'
 };
 
 const isLower = code => code >= MIN_LOWER && code <= MAX_LOWER;

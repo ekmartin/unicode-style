@@ -18,6 +18,7 @@ import Header from './Header';
 const STYLE_MAP = {
   BOLD: {},
   UNDERLINE: {},
+  STRIKETHROUGH: {},
   ITALIC: {},
   CODE: {},
   DOUBLE: {},
