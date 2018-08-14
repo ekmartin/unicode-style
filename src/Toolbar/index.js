@@ -33,11 +33,17 @@ const FrakturButton = createInlineStyleButton({
   children: createSpan('𝔉')
 });
 
+const StrikethroughButton = createInlineStyleButton({
+  style: 'STRIKETHROUGH',
+  children: createSpan('X̶')
+});
+
 const inlineToolbarPlugin = createInlineToolbarPlugin({
   structure: [
     BoldButton,
     ItalicButton,
     UnderlineButton,
+    StrikethroughButton,
     Separator,
     CodeButton,
     FrakturButton,
