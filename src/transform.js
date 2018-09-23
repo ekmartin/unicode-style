@@ -18,9 +18,9 @@ type Transform = {
   modifier: [number, number]
 };
 
-type Appender = string;
-
-type Style = Appender | Transform;
+type Appender = {
+  character: string
+};
 
 // Each transform consists of a modifier for lowercase and a modifier for
 // uppercase characters. To go from e.g. A to 𝔸, the character code for A, 65,
@@ -62,8 +62,12 @@ const COMBINED_TRANSFORMS = {
 // To e.g. underline a character, a
 // specific unicode character is appended prior to it.
 const APPENDERS = {
-  UNDERLINE: '̲',
-  STRIKETHROUGH: '̶'
+  UNDERLINE: {
+    character: '̲'
+  },
+  STRIKETHROUGH: {
+    character: '̶'
+  }
 };
 
 const isLower = code => code >= MIN_LOWER && code <= MAX_LOWER;
@@ -96,23 +100,28 @@ function filterStyles(
 /**
  * Turns e.g., BOLD and ITALIC into BOLDITALIC.
  */
-function combineStyles(styles: OrderedSet<string>): Array<Style> {
+function retrieveTransforms(styles: OrderedSet<string>): Array<Transform> {
   const combined = styles
     .filter(style => TRANSFORMS[style])
     .sort()
     .join('');
-  const appenders = styles.map(style => APPENDERS[style]).filter(a => a);
-  const transforms =
-    COMBINED_TRANSFORMS[combined] ||
-    styles.map(s => TRANSFORMS[s]).filter(t => t);
-  return appenders.concat(transforms);
+
+  if (COMBINED_TRANSFORMS[combined]) {
+    return [COMBINED_TRANSFORMS[combined]];
+  }
+
+  return styles.map(s => TRANSFORMS[s]).filter(t => t);
+}
+
+function retrieveAppenders(styles: OrderedSet<string>): Array<Appender> {
+  return styles.map(style => APPENDERS[style]).filter(a => a);
 }
 
 /**
  * Applies a transform by building characters using
  * a surrogate and a modifier from TRANSFORMS.
  */
-function applyTransform(transform: Transform, text: string): string {
+function applyTransform(text: string, transform: Transform): string {
   const { modifier } = transform;
   return runes(text)
     .map(char => {
@@ -131,15 +140,15 @@ function applyTransform(transform: Transform, text: string): string {
  * Styles text using appenders by prepending each
  * character with the given appendChar.
  */
-function applyAppender(appendChar: Appender, text: string): string {
-  return runes(text).reduce((str, char) => str + char + appendChar, '');
+function applyAppender(text: string, appender: Appender): string {
+  return runes(text).reduce((str, char) => str + char + appender.character, '');
 }
 
 /**
  * Reverts the work done by applyTransform by removing the correct modifier,
  * depending on whether a character is lower- or uppercase.
  */
-function removeTransform(transform: Transform, text: string) {
+function removeTransform(text: string, transform: Transform) {
   const { modifier } = transform;
   return runes(text)
     .map(char => {
@@ -163,33 +172,11 @@ function removeTransform(transform: Transform, text: string) {
 /**
  * Removes appended characters, e.g., underline modifiers.
  */
-function removeAppender(appendChar: Appender, text: string): string {
+function removeAppender(text: string, appender: Appender): string {
   return text
     .split('')
-    .filter(c => c !== appendChar)
+    .filter(c => c !== appender.character)
     .join('');
-}
-
-/**
- * Applies the given style type to `text`.
- */
-function applyStyle(style: Style, text: string): string {
-  if (typeof style === 'string') {
-    return applyAppender(style, text);
-  }
-
-  return applyTransform(style, text);
-}
-
-/**
- * Removes the given style type from `text`.
- */
-function removeStyle(style: Style, text: string): string {
-  if (typeof style === 'string') {
-    return removeAppender(style, text);
-  }
-
-  return removeTransform(style, text);
 }
 
 /**
@@ -231,6 +218,24 @@ function buildSelection(
   });
 }
 
+function applyStyles(
+  characters: string,
+  transforms: Array<Transform>,
+  appenders: Array<Appender>
+): string {
+  const styledText = transforms.reduce(applyTransform, characters);
+  return appenders.reduce(applyAppender, styledText);
+}
+
+function removeStyles(
+  characters: string,
+  transforms: Array<Transform>,
+  appenders: Array<Appender>
+): string {
+  const styledText = transforms.reduce(removeTransform, characters);
+  return appenders.reduce(removeAppender, styledText);
+}
+
 /**
  * Applies the current inline styles to the newly inserted `characters` by
  * replacing each one with an applicable unicode character
@@ -242,10 +247,9 @@ export function styleInsertion(
   const style = editorState.getCurrentInlineStyle();
   const selection = editorState.getSelection();
   const content = editorState.getCurrentContent();
-  const styledText = combineStyles(style).reduce(
-    (text, style) => applyStyle(style, text),
-    characters
-  );
+  const transforms = retrieveTransforms(style);
+  const appenders = retrieveAppenders(style);
+  const styledText = applyStyles(characters, transforms, appenders);
 
   return EditorState.push(
     editorState,
@@ -272,15 +276,13 @@ export function styleSelection(
   // To go from e.g. bold to bold and italics, we need to first remove the
   // existing bold styling, before applying both bold and italics together in
   // one pass:
-  const rawText = combineStyles(currentStyle).reduce(
-    (text: string, style: Style) => removeStyle(style, text),
-    currentText
-  );
+  const oldTransforms = retrieveTransforms(currentStyle);
+  const oldAppenders = retrieveAppenders(currentStyle);
+  const rawText = removeStyles(currentText, oldTransforms, oldAppenders);
 
-  const styledText = combineStyles(newStyle).reduce(
-    (text: string, style: Style) => applyStyle(style, text),
-    rawText
-  );
+  const transforms = retrieveTransforms(newStyle);
+  const appenders = retrieveAppenders(newStyle);
+  const styledText = applyStyles(rawText, transforms, appenders);
 
   const replaced = Modifier.replaceText(
     content,
