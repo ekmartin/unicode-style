@@ -9,6 +9,9 @@ const MAX_LOWER = 'z'.charCodeAt(0);
 const MIN_UPPER = 'A'.charCodeAt(0);
 const MAX_UPPER = 'Z'.charCodeAt(0);
 
+const isLower = code => code >= MIN_LOWER && code <= MAX_LOWER;
+const isCapital = code => code >= MIN_UPPER && code <= MAX_UPPER;
+
 // A styled unicode character is built up of
 // two UTF-16 code points, where the first is a surrogate.
 const SURROGATE = 0xd835;
@@ -54,6 +57,23 @@ const TRANSFORMS = {
   }
 };
 
+// Ignore lower hanging characters:
+const UNDERLINE_IGNORE = ['g', 'j', 'p', 'q', 'y'];
+
+// Repeat UNDERLINE_IGNORE for all transforms.
+function buildUnderlineIgnore() {
+  const repeated = UNDERLINE_IGNORE.reduce((total, char) => {
+    const permutations = Object.keys(TRANSFORMS).map(key =>
+      applyTransform(char, TRANSFORMS[key])
+    );
+
+    return total.concat(permutations);
+  }, []);
+
+  // Include the regular characters as well:
+  return repeated.concat(UNDERLINE_IGNORE);
+}
+
 const COMBINED_TRANSFORMS = {
   BOLDITALIC: {
     modifier: [0xddf5, 0xddfb]
@@ -65,17 +85,13 @@ const COMBINED_TRANSFORMS = {
 const APPENDERS = {
   UNDERLINE: {
     character: '̲',
-    // Ignore lower hanging characters:
-    ignore: ['g', 'j', 'p', 'q', 'y']
+    ignore: buildUnderlineIgnore()
   },
   STRIKETHROUGH: {
     character: '̶',
     ignore: []
   }
 };
-
-const isLower = code => code >= MIN_LOWER && code <= MAX_LOWER;
-const isCapital = code => code >= MIN_UPPER && code <= MAX_UPPER;
 
 /**
  * Since there's e.g., no unicode character for bold monospace, a few of the
