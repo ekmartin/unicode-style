@@ -19,7 +19,8 @@ type Transform = {
 };
 
 type Appender = {
-  character: string
+  character: string,
+  ignore: Array<string>
 };
 
 // Each transform consists of a modifier for lowercase and a modifier for
@@ -63,10 +64,13 @@ const COMBINED_TRANSFORMS = {
 // specific unicode character is appended prior to it.
 const APPENDERS = {
   UNDERLINE: {
-    character: '̲'
+    character: '̲',
+    // Ignore lower hanging characters:
+    ignore: ['g', 'j', 'p', 'q', 'y']
   },
   STRIKETHROUGH: {
-    character: '̶'
+    character: '̶',
+    ignore: []
   }
 };
 
@@ -141,7 +145,13 @@ function applyTransform(text: string, transform: Transform): string {
  * character with the given appendChar.
  */
 function applyAppender(text: string, appender: Appender): string {
-  return runes(text).reduce((str, char) => str + char + appender.character, '');
+  return runes(text).reduce((str, char) => {
+    if (appender.ignore.includes(char)) {
+      return str + char;
+    }
+
+    return str + char + appender.character;
+  }, '');
 }
 
 /**
