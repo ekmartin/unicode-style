@@ -190,6 +190,26 @@ function removeAppender(text: string, appender: Appender): string {
 }
 
 /**
+ * Applies a list of styles to the given characters.
+ */
+function applyStyles(characters: string, style: OrderedSet<string>): string {
+  const transforms = retrieveTransforms(style);
+  const appenders = retrieveAppenders(style);
+  const styledText = transforms.reduce(applyTransform, characters);
+  return appenders.reduce(applyAppender, styledText);
+}
+
+/**
+ * Removes a list of styles from the given characters.
+ */
+function removeStyles(characters: string, style: OrderedSet<string>): string {
+  const transforms = retrieveTransforms(style);
+  const appenders = retrieveAppenders(style);
+  const styledText = transforms.reduce(removeTransform, characters);
+  return appenders.reduce(removeAppender, styledText);
+}
+
+/**
  * Draft.js resets the selection after content changes, but we'd rather
  * maintain it, so that you can apply multiple styles to the same selection in
  * succession. At the same time, abc is not the same as 𝙖𝙗𝙘 (bold) — it has a
@@ -228,24 +248,6 @@ function buildSelection(
   });
 }
 
-function applyStyles(
-  characters: string,
-  transforms: Array<Transform>,
-  appenders: Array<Appender>
-): string {
-  const styledText = transforms.reduce(applyTransform, characters);
-  return appenders.reduce(applyAppender, styledText);
-}
-
-function removeStyles(
-  characters: string,
-  transforms: Array<Transform>,
-  appenders: Array<Appender>
-): string {
-  const styledText = transforms.reduce(removeTransform, characters);
-  return appenders.reduce(removeAppender, styledText);
-}
-
 /**
  * Applies the current inline styles to the newly inserted `characters` by
  * replacing each one with an applicable unicode character
@@ -257,9 +259,7 @@ export function styleInsertion(
   const style = editorState.getCurrentInlineStyle();
   const selection = editorState.getSelection();
   const content = editorState.getCurrentContent();
-  const transforms = retrieveTransforms(style);
-  const appenders = retrieveAppenders(style);
-  const styledText = applyStyles(characters, transforms, appenders);
+  const styledText = applyStyles(characters, style);
 
   return EditorState.push(
     editorState,
@@ -286,13 +286,8 @@ export function styleSelection(
   // To go from e.g. bold to bold and italics, we need to first remove the
   // existing bold styling, before applying both bold and italics together in
   // one pass:
-  const oldTransforms = retrieveTransforms(currentStyle);
-  const oldAppenders = retrieveAppenders(currentStyle);
-  const rawText = removeStyles(currentText, oldTransforms, oldAppenders);
-
-  const transforms = retrieveTransforms(newStyle);
-  const appenders = retrieveAppenders(newStyle);
-  const styledText = applyStyles(rawText, transforms, appenders);
+  const rawText = removeStyles(currentText, currentStyle);
+  const styledText = applyStyles(rawText, newStyle);
 
   const replaced = Modifier.replaceText(
     content,
