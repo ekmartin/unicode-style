@@ -99,22 +99,33 @@ const APPENDERS = {
  * existing transforms when an exclusive style is applied. The same goes the
  * other way as well, when a common style is applied while an existing
  * exclusive style is active, the common one takes presedence.
+ *
+ * Examples:
+ * (bold) -> (bold, fraktur) = fraktur
+ * (fraktur) -> (bold, fraktur) = bold
+ * (underline) -> (underline, fraktur) = (underline, fraktur)
  */
 function filterStyles(
-  oldStyles: OrderedSet<string>,
-  newStyles: OrderedSet<string>
+  oldStyle: OrderedSet<string>,
+  newStyle: OrderedSet<string>
 ): OrderedSet<string> {
-  const exclusive = newStyles.find(s => {
+  const oldTransforms = oldStyle.filter(s => TRANSFORMS[s]);
+  const newTransforms = newStyle.filter(s => TRANSFORMS[s]);
+  // We don't want to filter anything if the only thing that changes is an appender:
+  if (oldTransforms.equals(newTransforms)) return newStyle;
+
+  // Otherwise, see whether we have an exclusive transform in the current style set:
+  const exclusive = newStyle.find(s => {
     const transform = TRANSFORMS[s];
     return transform && transform.exclusive;
   });
 
+  // And when we do, keep the newest transforms:
   if (exclusive) {
-    const oldTransforms = oldStyles.filter(s => TRANSFORMS[s]);
-    return newStyles.subtract(oldTransforms);
+    return newStyle.subtract(oldTransforms);
   }
 
-  return newStyles;
+  return newStyle;
 }
 
 /**
