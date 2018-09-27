@@ -58,7 +58,7 @@ const TRANSFORMS = {
 };
 
 // Ignore lower hanging characters:
-const UNDERLINE_IGNORE = ['g', 'j', 'p', 'q', 'y'];
+const UNDERLINE_IGNORE = ['g', 'j', 'p', 'q', 'y', 'Q'];
 
 // Repeat UNDERLINE_IGNORE for all transforms.
 function buildUnderlineIgnore() {
